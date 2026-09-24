@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% block title %}Booking Confirmed — Falcons FC{% endblock %}
+
+{% block extra_css %}
+<style>
+.confirm-hero {
+    background: linear-gradient(135deg, rgba(46,204,113,0.1), rgba(27,58,107,0.3));
+    border-bottom: 1px solid rgba(46,204,113,0.2);
+    padding: 60px 0;
+    text-align: center;
+}
+
+.confirm-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(46,204,113,0.15);
+    border: 2px solid rgba(46,204,113,0.4);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin: 0 auto 24px;
+}
+
+.ticket-card-pro {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    overflow: hidden;
+    max-width: 520px;
+    margin: 0 auto;
+}
+
+.ticket-top {
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.ticket-top::after {
+    content: '🦅';
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 6rem;
+    opacity: 0.08;
+}
+
+.ticket-perforation {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.ticket-hole {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--dark-bg);
+    flex-shrink: 0;
+}
+
+.ticket-dotted {
+    flex: 1;
+    border-top: 2px dashed var(--card-border);
+    margin: 0 8px;
+}
+
+.ticket-body {
+    padding: 24px;
+}
+
+.ticket-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.ticket-detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── CONFIRM HERO ────────────────────────────────── -->
+<div class="confirm-hero">
+    <div class="confirm-icon">🎉</div>
+    <h1 class="section-title mb-2">BOOKING <span style="color:var(--success);">CONFIRMED!</span></h1>
+    <p style="color:var(--text-muted); font-size:0.95rem; max-width:480px; margin:0 auto 16px;">
+        Your ticket has been secured. Check your email for confirmation and your PDF ticket.
+    </p>
+    <div class="d-flex justify-content-center gap-3 flex-wrap">
+        <span style="font-size:0.8rem; color:var(--success);">
+            <i class="fas fa-check-circle me-1"></i>Booking Confirmed
+        </span>
+        <span style="font-size:0.8rem; color:var(--highlight);">
+            <i class="fas fa-envelope me-1"></i>Email Sent
+        </span>
+        <span style="font-size:0.8rem; color:var(--accent);">
+            <i class="fas fa-qrcode me-1"></i>QR Code Generated
+        </span>
+    </div>
+</div>
+
+<!-- ── TICKET ─────────────────────────────────────── -->
+<section style="padding: 60px 0 80px;">
+    <div class="container">
+
+        <div class="ticket-card-pro mb-4">
+            <!-- Top section -->
+            <div class="ticket-top">
+                <div style="font-size:0.65rem; color:rgba(255,255,255,0.6); letter-spacing:3px; text-transform:uppercase; margin-bottom:8px;">
+                    Falcons FC — Official Ticket
+                </div>
+                <div style="font-family:'Bebas Neue',sans-serif; font-size:1.6rem; letter-spacing:2px; margin-bottom:4px;">
+                    {{ ticket.match.home_team.name }} vs {{ ticket.match.away_team.name }}
+                </div>
+                <div style="font-size:0.85rem; color:rgba(255,255,255,0.7);">
+                    {{ ticket.match.competition.name }}
+                </div>
+            </div>
+
+            <!-- Perforation -->
+            <div class="ticket-perforation">
+                <div class="ticket-hole"></div>
+                <div class="ticket-dotted"></div>
+                <div class="ticket-hole"></div>
+            </div>
+
+            <!-- Body -->
+            <div class="ticket-body">
+                <div class="ticket-detail-grid">
+                    <div class="ticket-detail-item">
+                        <span class="section-label">Date</span>
+                        <span style="font-weight:600; font-size:0.9rem;">{{ ticket.match.date|date:"d M Y" }}</span>
+                    </div>
+                    <div class="ticket-detail-item">
+                        <span class="section-label">Kick-off</span>
+                        <span style="font-weight:600; font-size:0.9rem;">{{ ticket.match.date|date:"H:i" }}</span>
+                    </div>
+                    <div class="ticket-detail-item">
+                        <span class="section-label">Section</span>
+                        <span style="font-weight:600; font-size:0.9rem; color:var(--highlight);">{{ ticket.seat.row.section.name }}</span>
+                    </div>
+                    <div class="ticket-detail-item">
+                        <span class="section-label">Row / Seat</span>
+                        <span style="font-weight:600; font-size:0.9rem;">R{{ ticket.seat.row.row_number }} / S{{ ticket.seat.seat_number }}</span>
+                    </div>
+                    <div class="ticket-detail-item">
+                        <span class="section-label">Ticket Holder</span>
+                        <span style="font-weight:600; font-size:0.9rem;">{{ ticket.user.username }}</span>
+                    </div>
+                    <div class="ticket-detail-item">
+                        <span class="section-label">Booking Ref</span>
+                        <span style="font-weight:600; font-size:0.9rem;">#{{ booking.id }}</span>
+                    </div>
+                </div>
+
+                <!-- Perforation -->
+                <div class="ticket-perforation mb-4">
+                    <div class="ticket-hole"></div>
+                    <div class="ticket-dotted"></div>
+                    <div class="ticket-hole"></div>
+                </div>
+
+                <!-- Price + Status -->
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="section-label">Amount Paid</span>
+                        <div style="font-family:'Bebas Neue',sans-serif; font-size:2.2rem; color:var(--accent-bright); line-height:1;">
+                            €{{ ticket.final_price }}
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <span class="section-label">Status</span>
+                        <div style="margin-top:4px;">
+                            <span style="background:rgba(46,204,113,0.15); color:var(--success); border:1px solid rgba(46,204,113,0.3); padding:6px 14px; border-radius:20px; font-size:0.78rem; font-weight:700; letter-spacing:1px;">
+                                ✓ CONFIRMED
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <a href="{% url 'ticket_detail' ticket.id %}" class="btn btn-highlight px-4">
+                <i class="fas fa-ticket-alt me-2"></i>View Ticket & QR Code
+            </a>
+            <a href="{% url 'profile' %}" class="btn btn-silver px-4">
+                <i class="fas fa-user me-2"></i>My Bookings
+            </a>
+            <a href="{% url 'match_list' %}" class="btn btn-primary-fc px-4">
+                Browse More Matches
+            </a>
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

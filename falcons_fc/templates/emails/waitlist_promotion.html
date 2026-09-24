@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 30px auto; background: #ffffff; border-radius: 8px; overflow: hidden; }
+        .header { background: #0a0a0a; padding: 30px; text-align: center; }
+        .header h1 { color: #c8a951; margin: 0; font-size: 28px; }
+        .header p { color: #888; margin: 8px 0 0; font-size: 14px; }
+        .body { padding: 30px; }
+        .greeting { font-size: 16px; color: #333; margin-bottom: 20px; }
+        .alert-card { background: #1a4a1a; border-radius: 8px; padding: 24px; margin: 20px 0; border-left: 4px solid #2d6a2d; }
+        .alert-card h3 { color: #4caf50; margin: 0 0 12px; }
+        .alert-card p { color: #ffffff; margin: 0; font-size: 14px; }
+        .match-card { background: #1a1a1a; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #c8a951; }
+        .match-card h3 { color: #c8a951; margin: 0 0 12px; font-size: 16px; }
+        .detail-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #333; }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-label { color: #888; font-size: 13px; }
+        .detail-value { color: #ffffff; font-size: 13px; font-weight: bold; }
+        .btn { display: inline-block; background: #c8a951; color: #000; padding: 14px 36px; border-radius: 6px; text-decoration: none; font-weight: bold; margin: 20px 0; font-size: 15px; }
+        .warning { color: #e57373; font-size: 13px; margin-top: 16px; }
+        .footer { background: #0a0a0a; padding: 20px; text-align: center; }
+        .footer p { color: #666; font-size: 12px; margin: 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🦅 Falcons FC</h1>
+            <p>Official Ticketing Platform</p>
+        </div>
+        <div class="body">
+            <p class="greeting">Dear {{ user.username }},</p>
+            <div class="alert-card">
+                <h3>🎉 Great news — a seat is available!</h3>
+                <p>You have been promoted from the waitlist. A seat is now available in your requested section.</p>
+            </div>
+            <div class="match-card">
+                <h3>{{ entry.match }}</h3>
+                <div class="detail-row">
+                    <span class="detail-label">Date</span>
+                    <span class="detail-value">{{ entry.match.date|date:"l, d F Y — H:i" }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Section</span>
+                    <span class="detail-value">{{ entry.section.name }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Base Price</span>
+                    <span class="detail-value">€{{ entry.section.base_price }}</span>
+                </div>
+            </div>
+            <p style="color:#333; font-size:14px;">
+                Log in to Falcons FC now to select your seat before it is taken by another fan.
+            </p>
+            <p class="warning">
+                ⚠️ Seats are available on a first-come first-served basis.
+                Act quickly before this opportunity is taken by another fan on the waitlist.
+            </p>
+        </div>
+        <div class="footer">
+            <p>🦅 Falcons FC Ticketing System — {{ entry.match.stadium.city }}</p>
+            <p style="margin-top:8px;">This is an automated email. Please do not reply.</p>
+        </div>
+    </div>
+</body>
+</html>

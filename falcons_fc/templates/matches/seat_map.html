@@ -1,0 +1,373 @@
+{% extends 'base.html' %}
+{% block title %}Select Seat — {{ section.name }} — Falcons FC{% endblock %}
+
+{% block extra_css %}
+<style>
+.seat-hero {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    border-bottom: 1px solid var(--card-border);
+    padding: 40px 0 30px;
+}
+
+.pitch-indicator {
+    background: linear-gradient(180deg, rgba(46,204,113,0.15), transparent);
+    border: 1px solid rgba(46,204,113,0.2);
+    border-bottom: 3px solid rgba(46,204,113,0.4);
+    border-radius: 8px 8px 0 0;
+    padding: 10px;
+    text-align: center;
+    margin-bottom: 0;
+}
+
+.pitch-text {
+    font-size: 0.7rem;
+    color: rgba(46,204,113,0.7);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-weight: 600;
+}
+
+.seat-grid-wrapper {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    overflow: hidden;
+    padding: 24px;
+}
+
+.seat-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.row-label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+}
+
+.seat {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px 6px 3px 3px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    font-size: 0;
+}
+
+.seat::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 3px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 0 0 3px 3px;
+}
+
+.seat.available {
+    background: rgba(46,204,113,0.2);
+    border: 1px solid rgba(46,204,113,0.4);
+}
+
+.seat.available:hover {
+    background: rgba(46,204,113,0.5);
+    border-color: rgba(46,204,113,0.8);
+    transform: scale(1.15);
+    z-index: 2;
+}
+
+.seat.taken {
+    background: rgba(231,76,60,0.15);
+    border: 1px solid rgba(231,76,60,0.2);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.seat.selected {
+    background: var(--highlight);
+    border: 1px solid var(--highlight);
+    box-shadow: 0 0 12px rgba(74,144,217,0.5);
+    transform: scale(1.15);
+    z-index: 2;
+}
+
+/* Reserve floating bar */
+.reserve-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(13,27,46,0.97);
+    border-top: 1px solid var(--card-border);
+    padding: 16px 0;
+    z-index: 999;
+    backdrop-filter: blur(10px);
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+
+.reserve-bar.visible {
+    transform: translateY(0);
+}
+
+.legend-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.seat-tooltip {
+    position: absolute;
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary-dark);
+    border: 1px solid var(--card-border);
+    color: var(--text-primary);
+    font-size: 0.65rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 10;
+}
+
+.seat:hover .seat-tooltip {
+    opacity: 1;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── SEAT HERO ───────────────────────────────────── -->
+<div class="seat-hero">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb" style="font-size:0.8rem;">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'match_list' %}" style="color:var(--highlight);">Fixtures</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'match_detail' match.id %}" style="color:var(--highlight);">
+                        {{ match.home_team.name }} vs {{ match.away_team.name }}
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" style="color:var(--text-muted);">
+                    {{ section.name }}
+                </li>
+            </ol>
+        </nav>
+
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div>
+                <h2 class="section-title mb-1">
+                    {{ section.name }} <span style="color:var(--highlight);">SEATS</span>
+                </h2>
+                <p style="color:var(--text-muted); font-size:0.875rem; margin:0;">
+                    {{ match }} — {{ match.date|date:"d M Y, H:i" }}
+                </p>
+            </div>
+            <div style="background:rgba(255,255,255,0.05); border:1px solid var(--card-border); border-radius:10px; padding:12px 20px; text-align:center;">
+                <div style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">Dynamic Price</div>
+                <div style="font-family:'Bebas Neue',sans-serif; font-size:2rem; color:var(--accent-bright); line-height:1;">
+                    €{{ dynamic_price }}
+                </div>
+                {% if dynamic_price != section.base_price %}
+                <div style="font-size:0.72rem; color:var(--text-muted); text-decoration:line-through;">€{{ section.base_price }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── SEAT MAP ───────────────────────────────────── -->
+<section style="padding: 40px 0 120px;">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-9">
+
+                <!-- Pitch indicator -->
+                <div class="pitch-indicator">
+                    <span class="pitch-text">🏟️ Pitch / Playing Field 🏟️</span>
+                </div>
+
+                <!-- Seat grid -->
+                <div class="seat-grid-wrapper" style="border-radius:0 0 14px 14px; border-top:none;">
+                    <form id="seat-form" method="post" action="{% url 'lock_seat' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="match_id" value="{{ match.id }}">
+                        <input type="hidden" name="seat_id" id="selected-seat-id" value="">
+
+                        {% for row in rows %}
+                        <div class="seat-row">
+                            <div class="row-label">R{{ row.row_number }}</div>
+                            {% for seat in row.seats.all %}
+                            <div style="position:relative;">
+                                <button type="button"
+                                    class="seat {% if seat.id in taken_ids %}taken{% else %}available{% endif %}"
+                                    {% if seat.id in taken_ids %}disabled{% endif %}
+                                    data-seat-id="{{ seat.id }}"
+                                    data-seat-num="{{ seat.seat_number }}"
+                                    data-row-num="{{ row.row_number }}"
+                                    onclick="selectSeat(this)">
+                                </button>
+                                <div class="seat-tooltip">R{{ row.row_number }} S{{ seat.seat_number }}</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                    </form>
+
+                    <!-- Legend -->
+                    <div class="d-flex gap-4 mt-4 pt-4" style="border-top:1px solid var(--card-border); flex-wrap:wrap;">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="legend-dot" style="background:rgba(46,204,113,0.3); border:1px solid rgba(46,204,113,0.5);"></div>
+                            <span style="font-size:0.78rem; color:var(--text-muted);">Available</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="legend-dot" style="background:var(--highlight); border:1px solid var(--highlight);"></div>
+                            <span style="font-size:0.78rem; color:var(--text-muted);">Selected</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="legend-dot" style="background:rgba(231,76,60,0.2); border:1px solid rgba(231,76,60,0.2);"></div>
+                            <span style="font-size:0.78rem; color:var(--text-muted);">Taken</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-3">
+                <div class="fc-card p-4" style="position:sticky; top:80px;">
+                    <div class="section-label mb-3">Booking Summary</div>
+
+                    <div class="mb-3">
+                        <div class="section-label">Match</div>
+                        <div style="font-size:0.875rem; font-weight:600; margin-top:4px;">{{ match }}</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="section-label">Section</div>
+                        <div style="font-size:0.875rem; font-weight:600; margin-top:4px; color:var(--highlight);">
+                            {{ section.name }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="section-label">Selected Seat</div>
+                        <div id="seat-display" style="font-size:0.875rem; color:var(--text-muted); margin-top:4px;">
+                            No seat selected
+                        </div>
+                    </div>
+
+                    <hr class="fc-divider">
+
+                    <div class="mb-3">
+                        <div class="section-label">Price</div>
+                        <div style="font-family:'Bebas Neue',sans-serif; font-size:2rem; color:var(--accent-bright); line-height:1; margin-top:4px;">
+                            €{{ dynamic_price }}
+                        </div>
+                    </div>
+
+                    <div class="alert-fc p-3 mb-3" style="font-size:0.78rem;">
+                        <i class="fas fa-clock me-2" style="color:var(--highlight);"></i>
+                        Seats are held for <strong>15 minutes</strong> after selection
+                    </div>
+
+                    <button type="button" id="reserve-btn"
+                            onclick="submitSeat()"
+                            class="btn btn-highlight w-100"
+                            disabled>
+                        Reserve Seat →
+                    </button>
+
+                    <a href="{% url 'match_detail' match.id %}"
+                       class="btn btn-silver w-100 mt-2 btn-sm">
+                        ← Change Section
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── RESERVE BAR (mobile) ───────────────────────── -->
+<div class="reserve-bar d-lg-none" id="reserve-bar">
+    <div class="container">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <div style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">Selected</div>
+                <div id="reserve-bar-seat" style="font-weight:700; font-size:0.95rem;">—</div>
+            </div>
+            <div class="text-center">
+                <div style="font-family:'Bebas Neue',sans-serif; font-size:1.8rem; color:var(--accent-bright); line-height:1;">€{{ dynamic_price }}</div>
+            </div>
+            <button type="button" onclick="submitSeat()" class="btn btn-highlight px-4">
+                Reserve →
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+var selectedSeatId = null;
+
+function selectSeat(btn) {
+    if (btn.classList.contains('taken')) return;
+
+    document.querySelectorAll('.seat.selected').forEach(function(s) {
+        s.classList.remove('selected');
+        s.classList.add('available');
+    });
+
+    if (selectedSeatId == btn.dataset.seatId) {
+        selectedSeatId = null;
+        document.getElementById('selected-seat-id').value = '';
+        document.getElementById('seat-display').textContent = 'No seat selected';
+        document.getElementById('seat-display').style.color = 'var(--text-muted)';
+        document.getElementById('reserve-btn').disabled = true;
+        document.getElementById('reserve-bar').classList.remove('visible');
+        return;
+    }
+
+    btn.classList.remove('available');
+    btn.classList.add('selected');
+    selectedSeatId = btn.dataset.seatId;
+
+    var rowNum = btn.dataset.rowNum;
+    var seatNum = btn.dataset.seatNum;
+    var display = 'Row ' + rowNum + ', Seat ' + seatNum;
+
+    document.getElementById('selected-seat-id').value = selectedSeatId;
+    document.getElementById('seat-display').textContent = display;
+    document.getElementById('seat-display').style.color = 'var(--accent-bright)';
+    document.getElementById('reserve-btn').disabled = false;
+
+    document.getElementById('reserve-bar-seat').textContent = display;
+    document.getElementById('reserve-bar').classList.add('visible');
+}
+
+function submitSeat() {
+    if (!selectedSeatId) return;
+    document.getElementById('seat-form').submit();
+}
+</script>
+{% endblock %}

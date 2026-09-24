@@ -1,0 +1,424 @@
+{% extends 'base.html' %}
+{% block title %}Fixtures — Falcons FC{% endblock %}
+
+{% block extra_css %}
+<style>
+.page-hero {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+    border-bottom: 1px solid var(--card-border);
+    padding: 60px 0 40px;
+    position: relative;
+    overflow: hidden;
+}
+
+.page-hero::before {
+    content: 'FIXTURES';
+    position: absolute;
+    right: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 10rem;
+    color: rgba(255,255,255,0.03);
+    letter-spacing: 10px;
+    pointer-events: none;
+}
+
+.filter-bar {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 6px;
+    display: inline-flex;
+    gap: 4px;
+}
+
+.filter-btn {
+    padding: 8px 20px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.filter-btn:hover {
+    color: var(--text-primary);
+    background: rgba(74,144,217,0.1);
+}
+
+.filter-btn.active {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(27,58,107,0.5);
+}
+
+.match-row {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    transition: all 0.25s;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.match-row:hover {
+    border-color: var(--highlight);
+    background: rgba(27,58,107,0.2);
+    transform: translateX(4px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    color: inherit;
+}
+
+.match-date-block {
+    background: rgba(27,58,107,0.4);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 10px 16px;
+    text-align: center;
+    min-width: 70px;
+    flex-shrink: 0;
+}
+
+.match-day {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    line-height: 1;
+    color: var(--accent-bright);
+}
+
+.match-month {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.team-vs-block {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.team-block {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.team-block.away { flex-direction: row-reverse; }
+
+.team-crest-sm {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.vs-badge {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    flex-shrink: 0;
+}
+
+.match-info-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.kickoff-time {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── PAGE HERO ──────────────────────────────────── -->
+<div class="page-hero">
+    <div class="container">
+        <div class="hero-eyebrow mb-2" style="color:var(--highlight); font-size:0.7rem; letter-spacing:4px; text-transform:uppercase; font-weight:600;">
+            Falcons Arena — Messina
+        </div>
+        <h1 class="section-title" style="font-size:3rem; margin-bottom:8px;">
+            ALL <span style="color:var(--highlight);">FIXTURES</span>
+        </h1>
+        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:32px;">
+            {{ upcoming_matches|length }} upcoming matches this season
+        </p>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <a href="{% url 'match_list' %}"
+               class="filter-btn {% if not competition_type %}active{% endif %}">
+                All
+            </a>
+            <a href="{% url 'match_list' %}?type=League"
+               class="filter-btn {% if competition_type == 'League' %}active{% endif %}">
+                ⚽ League
+            </a>
+            <a href="{% url 'match_list' %}?type=Cup"
+               class="filter-btn {% if competition_type == 'Cup' %}active{% endif %}">
+                🏆 Cup
+            </a>
+            <a href="{% url 'match_list' %}?type=Derby"
+               class="filter-btn {% if competition_type == 'Derby' %}active{% endif %}">
+                🔥 Derby
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- ── MATCH LIST ─────────────────────────────────── -->
+<section style="padding: 40px 0 80px;">
+    <div class="container">
+        {% if upcoming_matches %}
+        <div class="d-flex flex-column gap-3">
+            {% for match in upcoming_matches %}
+            <a href="{% url 'match_detail' match.id %}" class="match-row">
+
+                <!-- Date Block -->
+                <div class="match-date-block">
+                    <div class="match-day">{{ match.date|date:"d" }}</div>
+                    <div class="match-month">{{ match.date|date:"M Y" }}</div>
+                </div>
+
+                <!-- Teams -->
+                <div class="team-vs-block">
+                    <!-- Home team -->
+                    <div class="team-block">
+                        <div class="team-crest-sm home-crest">
+                            {% if match.home_team.logo %}
+                            <img src="{{ match.home_team.logo.url }}" alt="{{ match.home_team.name }}" style="width:80%; height:80%; object-fit:contain;">
+                            {% else %}🦅{% endif %}
+                        </div>
+                        <div>
+                            <div style="font-weight:700; font-size:0.95rem;">
+                                {{ match.home_team.name }}
+                            </div>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">Home</div>
+                        </div>
+                    </div>
+
+                    <!-- VS -->
+                    <div class="vs-badge">VS</div>
+
+                    <!-- Away team -->
+                    <div class="team-block away">
+                        <div class="team-crest-sm away-crest">
+                            {% if match.away_team.logo %}
+                            <img src="{{ match.away_team.logo.url }}" alt="{{ match.away_team.name }}" style="width:80%; height:80%; object-fit:contain;">
+                            {% else %}⚽{% endif %}
+                        </div>
+                        <div class="text-end">
+                            <div style="font-weight:700; font-size:0.95rem;">
+                                {{ match.away_team.name }}
+                            </div>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">Away</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Match Info -->
+                <div class="match-info-block">
+                    {% if match.competition.competition_type == 'Derby' %}
+                    <span class="badge-derby">🔥 Derby</span>
+                    {% elif match.competition.competition_type == 'Cup' %}
+                    <span class="badge-cup">🏆 Cup</span>
+                    {% else %}
+                    <span class="badge-league">⚽ League</span>
+                    {% endif %}
+
+                    <div class="kickoff-time">
+                        <i class="fas fa-clock"></i>
+                        {{ match.date|date:"H:i" }}
+                    </div>
+
+                    <div class="kickoff-time">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Falcons Arena
+                    </div>
+                </div>
+
+                <!-- Arrow -->
+                <div style="color:var(--text-muted); flex-shrink:0;">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+
+            </a>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-icon">📅</div>
+            <h4 style="color:var(--text-muted); font-weight:600; margin-bottom:8px;">
+                No fixtures found
+            </h4>
+            {% if competition_type %}
+            <p style="color:var(--text-muted); font-size:0.875rem; margin-bottom:24px;">
+                No upcoming {{ competition_type }} matches at the moment.
+            </p>
+            <a href="{% url 'match_list' %}" class="btn btn-highlight">
+                View All Matches
+            </a>
+            {% else %}
+            <p style="color:var(--text-muted); font-size:0.875rem;">
+                No upcoming matches scheduled yet. Check back soon!
+            </p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+<!-- ── AWAY FIXTURES ──────────────────────────────── -->
+{% if away_matches %}
+<section style="padding: 0 0 80px;">
+    <div class="container">
+
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <div style="font-size:0.7rem; letter-spacing:4px; text-transform:uppercase; color:#F39C12; font-weight:600; margin-bottom:8px;">
+                    <i class="fas fa-plane me-2"></i>Away Fixtures
+                </div>
+                <h2 class="section-title">AWAY <span style="color:#F39C12;">MATCHES</span></h2>
+                <p style="color:var(--text-muted); font-size:0.85rem; margin-top:4px;">
+                    Falcons FC on the road — buy tickets directly from the host club
+                </p>
+            </div>
+        </div>
+
+        <div class="d-flex flex-column gap-3">
+            {% for match in away_matches %}
+            <div style="background:var(--card-bg); border:1px solid rgba(243,156,18,0.2); border-radius:12px; padding:20px 24px; display:flex; align-items:center; gap:20px; transition:all 0.25s;"
+                 onmouseover="this.style.borderColor='rgba(243,156,18,0.5)'; this.style.transform='translateX(4px)';"
+                 onmouseout="this.style.borderColor='rgba(243,156,18,0.2)'; this.style.transform='translateX(0)';">
+
+                <!-- Date Block -->
+                <div style="background:rgba(243,156,18,0.1); border:1px solid rgba(243,156,18,0.2); border-radius:10px; padding:10px 16px; text-align:center; min-width:70px; flex-shrink:0;">
+                    <div style="font-family:'Bebas Neue',sans-serif; font-size:2rem; color:#F39C12; line-height:1;">
+                        {{ match.date|date:"d" }}
+                    </div>
+                    <div style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">
+                        {{ match.date|date:"M Y" }}
+                    </div>
+                </div>
+
+                <!-- Teams -->
+                <div style="flex:1; display:flex; align-items:center; gap:16px;">
+                    <!-- Home (opponent) -->
+                    <div style="display:flex; align-items:center; gap:10px; flex:1;">
+                        <div style="width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,0.08); border:1px solid var(--card-border); display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; overflow:hidden;">
+                            {% if match.home_team.logo %}
+                            <img src="{{ match.home_team.logo.url }}" alt="{{ match.home_team.name }}" style="width:80%; height:80%; object-fit:contain;">
+                            {% else %}⚽{% endif %}
+                        </div>
+                        <div>
+                            <div style="font-weight:700; font-size:0.95rem;">{{ match.home_team.name }}</div>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">
+                                {{ match.stadium.name }}, {{ match.stadium.city }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VS -->
+                    <div style="font-family:'Bebas Neue',sans-serif; font-size:1.1rem; color:var(--text-muted); letter-spacing:2px; flex-shrink:0;">VS</div>
+
+                    <!-- Away (Falcons FC) -->
+                    <div style="display:flex; align-items:center; gap:10px; flex:1; flex-direction:row-reverse;">
+                        <div style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--highlight)); display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0;">
+                            🦅
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-weight:700; font-size:0.95rem;">{{ match.away_team.name }}</div>
+                            <div style="font-size:0.75rem; color:#F39C12; font-weight:600;">AWAY</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Match Info -->
+                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex-shrink:0;">
+                    {% if match.competition.competition_type == 'Derby' %}
+                    <span class="badge-derby">🔥 Derby</span>
+                    {% elif match.competition.competition_type == 'Cup' %}
+                    <span class="badge-cup">🏆 Cup</span>
+                    {% else %}
+                    <span class="badge-league">⚽ League</span>
+                    {% endif %}
+
+                    <div style="font-size:0.78rem; color:var(--text-muted); display:flex; align-items:center; gap:4px;">
+                        <i class="fas fa-clock"></i>
+                        {{ match.date|date:"H:i" }}
+                    </div>
+                </div>
+
+                <!-- External Ticket Button -->
+                {% if match.external_ticket_url %}
+                <a href="{{ match.external_ticket_url }}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="btn btn-sm flex-shrink-0"
+                   style="background:rgba(243,156,18,0.15); border:1px solid rgba(243,156,18,0.4); color:#F39C12; font-weight:600; white-space:nowrap; padding:8px 16px;">
+                    Buy Away Tickets
+                    <i class="fas fa-external-link-alt ms-1" style="font-size:0.7rem;"></i>
+                </a>
+                {% endif %}
+
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="alert-fc mt-4 p-3" style="border-left:3px solid rgba(243,156,18,0.5);">
+            <i class="fas fa-info-circle me-2" style="color:#F39C12;"></i>
+            <span style="font-size:0.8rem; color:var(--text-muted);">
+                Away match tickets are sold directly by the host club.
+                Falcons FC is not responsible for external ticket purchases.
+                Always buy from official club websites.
+            </span>
+        </div>
+
+    </div>
+</section>
+{% endif %}
+
+{% endblock %}

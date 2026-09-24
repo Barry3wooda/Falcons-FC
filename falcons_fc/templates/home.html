@@ -1,0 +1,531 @@
+{% extends 'base.html' %}
+{% block title %}Falcons FC — Official Ticketing{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── HERO ─────────────────────────────────────────── */
+.hero {
+    position: relative;
+    min-height: 92vh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+
+.hero-bg {
+    position: absolute;
+    inset: 0;
+    background-image: url('https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=1600&q=80');
+    background-size: cover;
+    background-position: center 30%;
+    filter: blur(2px) brightness(0.35);
+    transform: scale(1.05);
+}
+
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(13,27,46,0.92) 0%,
+        rgba(27,58,107,0.6) 50%,
+        rgba(13,27,46,0.95) 100%
+    );
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    padding: 80px 0;
+}
+
+.hero-eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--highlight);
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.hero-eyebrow::before {
+    content: '';
+    width: 32px;
+    height: 2px;
+    background: var(--highlight);
+    border-radius: 2px;
+}
+
+.hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3.5rem, 8vw, 6.5rem);
+    line-height: 0.95;
+    letter-spacing: 2px;
+    color: #fff;
+    margin-bottom: 8px;
+}
+
+.hero-title span {
+    color: var(--highlight);
+}
+
+.hero-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    max-width: 480px;
+    margin-bottom: 40px;
+    font-weight: 300;
+    line-height: 1.7;
+}
+
+.hero-stats {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.hero-stat {
+    display: flex;
+    flex-direction: column;
+}
+
+.hero-stat-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    color: var(--accent-bright);
+    line-height: 1;
+}
+
+.hero-stat-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* ── MATCH CARD ──────────────────────────────────── */
+.match-vs {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+}
+
+.team-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    text-align: center;
+    margin-top: 8px;
+    line-height: 1.2;
+}
+
+.team-crest {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    margin: 0 auto;
+}
+
+.home-crest {
+    background: linear-gradient(135deg, var(--primary), var(--highlight));
+    box-shadow: 0 0 20px rgba(74,144,217,0.3);
+}
+
+.away-crest {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid var(--card-border);
+}
+
+.match-date {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.match-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-top: 1px solid var(--card-border);
+    background: rgba(27,58,107,0.2);
+}
+
+/* ── SECTION TITLES ──────────────────────────────── */
+.section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 2px;
+    color: var(--text-primary);
+}
+
+.section-title span { color: var(--highlight); }
+
+/* ── RECOMMENDED ─────────────────────────────────── */
+.rec-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(74,144,217,0.1);
+    border: 1px solid rgba(74,144,217,0.3);
+    color: var(--highlight);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+
+/* ── TRUST BAR ───────────────────────────────────── */
+.trust-bar {
+    background: rgba(27,58,107,0.3);
+    border-top: 1px solid var(--card-border);
+    border-bottom: 1px solid var(--card-border);
+    padding: 16px 0;
+}
+
+.trust-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    font-weight: 500;
+}
+
+.trust-icon {
+    width: 32px;
+    height: 32px;
+    background: rgba(74,144,217,0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--highlight);
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── HERO SECTION ─────────────────────────────────── -->
+<section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="container hero-content">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <div class="hero-eyebrow">Official Ticketing Platform</div>
+                <h1 class="hero-title">
+                    YOUR SEAT<br>
+                    <span>AWAITS</span><br>
+                    YOU
+                </h1>
+                <p class="hero-subtitle">
+                    Experience the passion of Sicilian football.
+                    Book your seat at Falcons Arena and be part
+                    of something unforgettable.
+                </p>
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">314</span>
+                        <span class="hero-stat-label">Total Seats</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">4</span>
+                        <span class="hero-stat-label">Sections</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">10</span>
+                        <span class="hero-stat-label">Fixtures</span>
+                    </div>
+                </div>
+                <div class="hero-actions">
+                    <a href="{% url 'match_list' %}" class="btn btn-highlight btn-lg px-5">
+                        Browse Matches
+                    </a>
+                    {% if not user.is_authenticated %}
+                    <a href="{% url 'register' %}" class="btn btn-silver btn-lg px-4">
+                        Create Account
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Upcoming match preview on hero -->
+            {% if upcoming_matches %}
+            <div class="col-lg-5 offset-lg-1 d-none d-lg-block">
+                <div style="background:rgba(13,27,46,0.8); border:1px solid var(--card-border); border-radius:16px; padding:20px; backdrop-filter:blur(10px);">
+                    <div class="section-label mb-3">
+                        <i class="fas fa-calendar-alt me-2" style="color:var(--highlight);"></i>
+                        Next Fixture
+                    </div>
+                    {% with match=upcoming_matches.0 %}
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <div class="text-center" style="flex:1;">
+                            <div class="match-crest match-crest-home">
+                                {% if match.home_team.logo %}
+                                <img src="{{ match.home_team.logo.url }}" alt="{{ match.home_team.name }}" style="width:80%; height:80%; object-fit:contain;">
+                                {% else %}🦅{% endif %}
+                            </div>
+                            <div class="team-name">{{ match.home_team.name }}</div>
+                        </div>
+                        <div class="text-center px-3">
+                            <div class="match-vs">VS</div>
+                            <div class="mt-2">
+                                {% if match.competition.competition_type == 'Derby' %}
+                                <span class="badge-derby">DERBY</span>
+                                {% elif match.competition.competition_type == 'Cup' %}
+                                <span class="badge-cup">CUP</span>
+                                {% else %}
+                                <span class="badge-league">LEAGUE</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="text-center" style="flex:1;">
+                            <div class="match-crest match-crest-home">
+                                {% if match.away_team.logo %}
+                                <img src="{{ match.away_team.logo.url }}" alt="{{ match.away_team.name }}" style="width:80%; height:80%; object-fit:contain;">
+                                {% else %}⚽{% endif %}
+                            </div>
+                            <div class="team-name">{{ match.away_team.name }}</div>
+                        </div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:12px 16px; margin-bottom:16px;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="section-label">Date</div>
+                                <div style="font-size:0.9rem; font-weight:600;">{{ match.date|date:"d M Y" }}</div>
+                            </div>
+                            <div>
+                                <div class="section-label">Kick-off</div>
+                                <div style="font-size:0.9rem; font-weight:600;">{{ match.date|date:"H:i" }}</div>
+                            </div>
+                            <div>
+                                <div class="section-label">Venue</div>
+                                <div style="font-size:0.9rem; font-weight:600;">Falcons Arena</div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="{% url 'match_detail' match.id %}" class="btn btn-highlight w-100">
+                        Get Tickets →
+                    </a>
+                    {% endwith %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- ── TRUST BAR ────────────────────────────────────── -->
+<div class="trust-bar">
+    <div class="container">
+        <div class="row g-3 justify-content-center text-center">
+            <div class="col-6 col-md-3">
+                <div class="trust-item justify-content-center">
+                    <div class="trust-icon"><i class="fas fa-lock"></i></div>
+                    <span>Secure Payment</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="trust-item justify-content-center">
+                    <div class="trust-icon"><i class="fas fa-qrcode"></i></div>
+                    <span>Instant E-Ticket</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="trust-item justify-content-center">
+                    <div class="trust-icon"><i class="fas fa-bolt"></i></div>
+                    <span>Real-Time Availability</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="trust-item justify-content-center">
+                    <div class="trust-icon"><i class="fas fa-users"></i></div>
+                    <span>Group Booking</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── UPCOMING MATCHES ─────────────────────────────── -->
+{% if upcoming_matches %}
+<section style="padding: 80px 0;">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-5">
+            <div>
+                <div class="hero-eyebrow">This Season</div>
+                <h2 class="section-title">UPCOMING <span>FIXTURES</span></h2>
+            </div>
+            <a href="{% url 'match_list' %}" class="btn btn-silver">
+                View All →
+            </a>
+        </div>
+
+        <div class="row g-4">
+            {% for match in upcoming_matches %}
+            <div class="col-md-4">
+                <div class="match-card h-100">
+                    <div class="match-card-header">
+                        {% if match.competition.competition_type == 'Derby' %}
+                        <span class="badge-derby">🔥 DERBY</span>
+                        {% elif match.competition.competition_type == 'Cup' %}
+                        <span class="badge-cup">🏆 CUP</span>
+                        {% else %}
+                        <span class="badge-league">⚽ LEAGUE</span>
+                        {% endif %}
+                        <span class="match-date">
+                            <i class="fas fa-calendar-alt"></i>
+                            {{ match.date|date:"d M Y" }}
+                        </span>
+                    </div>
+
+                    <div style="padding: 24px 20px;">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="text-center" style="flex:1;">
+                                <div class="match-crest match-crest-home">
+                                    {% if match.home_team.logo %}
+                                    <img src="{{ match.home_team.logo.url }}" alt="{{ match.home_team.name }}" style="width:80%; height:80%; object-fit:contain;">
+                                    {% else %}🦅{% endif %}
+                                </div>
+                                <div class="team-name">{{ match.home_team.name }}</div>
+                            </div>
+                            <div class="text-center px-3">
+                                <div class="match-vs">VS</div>
+                                <div class="match-date mt-1">
+                                    <i class="fas fa-clock"></i>
+                                    {{ match.date|date:"H:i" }}
+                                </div>
+                            </div>
+                            <div class="text-center" style="flex:1;">
+                                <div class="match-crest match-crest-away">
+                                    {% if match.away_team.logo %}
+                                    <img src="{{ match.away_team.logo.url }}" alt="{{ match.away_team.name }}" style="width:80%; height:80%; object-fit:contain;">
+                                    {% else %}⚽{% endif %}
+                                </div>
+                                <div class="team-name">{{ match.away_team.name }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="match-meta">
+                        <span class="match-date">
+                            <i class="fas fa-map-marker-alt"></i>
+                            {{ match.stadium.name }}
+                        </span>
+                        <a href="{% url 'match_detail' match.id %}"
+                           class="btn btn-primary-fc btn-sm">
+                            Tickets →
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- ── RECOMMENDATIONS ──────────────────────────────── -->
+{% if user.is_authenticated and recommended_matches %}
+<section style="padding: 0 0 80px;">
+    <div class="container">
+        <hr class="fc-divider">
+        <div class="d-flex justify-content-between align-items-end mb-4 mt-5">
+            <div>
+                <div class="rec-badge">
+                    <i class="fas fa-magic"></i>
+                    Personalised For You
+                </div>
+                <h2 class="section-title">YOU MIGHT <span>LIKE</span></h2>
+                {% if recommended_section %}
+                <p style="color:var(--text-muted); font-size:0.875rem; margin-top:4px;">
+                    Based on your history — we think you'll love the
+                    <strong style="color:var(--accent-bright);">{{ recommended_section.name }}</strong> section
+                </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row g-4">
+            {% for match in recommended_matches %}
+            <div class="col-md-4">
+                <div class="match-card h-100">
+                    <div class="match-card-header">
+                        {% if match.competition.competition_type == 'Derby' %}
+                        <span class="badge-derby">🔥 DERBY</span>
+                        {% elif match.competition.competition_type == 'Cup' %}
+                        <span class="badge-cup">🏆 CUP</span>
+                        {% else %}
+                        <span class="badge-league">⚽ LEAGUE</span>
+                        {% endif %}
+                        <span class="match-date">
+                            <i class="fas fa-calendar-alt"></i>
+                            {{ match.date|date:"d M Y" }}
+                        </span>
+                    </div>
+                    <div style="padding: 24px 20px;">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="text-center" style="flex:1;">
+                                <div class="match-crest match-crest-home">
+                                    {% if match.home_team.logo %}
+                                    <img src="{{ match.home_team.logo.url }}" alt="{{ match.home_team.name }}" style="width:80%; height:80%; object-fit:contain;">
+                                    {% else %}🦅{% endif %}
+                                </div>
+                                <div class="team-name">{{ match.home_team.name }}</div>
+                            </div>
+                            <div class="text-center px-3">
+                                <div class="match-vs">VS</div>
+                            </div>
+                            <div class="text-center" style="flex:1;">
+                                <div class="match-crest match-crest-away">
+                                    {% if match.away_team.logo %}
+                                    <img src="{{ match.away_team.logo.url }}" alt="{{ match.away_team.name }}" style="width:80%; height:80%; object-fit:contain;">
+                                    {% else %}⚽{% endif %}
+                                </div>
+                                <div class="team-name">{{ match.away_team.name }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="match-meta">
+                        <span class="match-date">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Falcons Arena
+                        </span>
+                        <a href="{% url 'match_detail' match.id %}"
+                           class="btn btn-primary-fc btn-sm">
+                            Tickets →
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% endblock %}

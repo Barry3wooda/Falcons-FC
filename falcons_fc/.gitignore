@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+env/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+media/
+
+# Environment variables
+.env
+
+# ML model files (large files)
+core/ml_models/*.pkl
+
+# macOS
+.DS_Store
+
+# VS Code
+.vscode/ml/data/

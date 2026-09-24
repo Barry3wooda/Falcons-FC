@@ -1,0 +1,247 @@
+{% extends 'base.html' %}
+{% block title %}My Profile — Falcons FC{% endblock %}
+
+{% block extra_css %}
+<style>
+.profile-hero {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    border-bottom: 1px solid var(--card-border);
+    padding: 50px 0;
+}
+
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--highlight));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    border: 3px solid var(--card-border);
+    flex-shrink: 0;
+}
+
+.booking-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.2s;
+}
+
+.booking-card:hover {
+    border-color: var(--highlight);
+    transform: translateX(3px);
+}
+
+.booking-card-header {
+    background: rgba(27,58,107,0.3);
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--card-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-box {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+}
+
+.stat-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    color: var(--accent-bright);
+    line-height: 1;
+    margin-bottom: 4px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── PROFILE HERO ────────────────────────────────── -->
+<div class="profile-hero">
+    <div class="container">
+        <div class="d-flex align-items-center gap-4 flex-wrap">
+            <div class="profile-avatar">
+                {% if user.avatar %}
+                <img src="{{ user.avatar.url }}" alt="Avatar"
+                     style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+                {% else %}
+                👤
+                {% endif %}
+            </div>
+            <div>
+                <h2 style="font-family:'Bebas Neue',sans-serif; font-size:2rem; letter-spacing:2px; margin-bottom:4px;">
+                    {{ user.get_full_name|default:user.username }}
+                </h2>
+                <p style="color:var(--text-muted); font-size:0.875rem; margin:0;">
+                    <i class="fas fa-envelope me-2"></i>{{ user.email }}
+                    {% if user.phone %}
+                    <span class="ms-3"><i class="fas fa-phone me-2"></i>{{ user.phone }}</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div class="ms-auto">
+                <a href="#edit-profile" class="btn btn-silver btn-sm">
+                    <i class="fas fa-edit me-1"></i>Edit Profile
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── CONTENT ────────────────────────────────────── -->
+<section style="padding: 40px 0 80px;">
+    <div class="container">
+        <div class="row g-4">
+
+            <!-- Left — Stats + Edit -->
+            <div class="col-lg-4">
+
+                <!-- Stats -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6">
+                        <div class="stat-box">
+                            <div class="stat-number">{{ bookings.count }}</div>
+                            <div class="section-label">Bookings</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-box">
+                            <div class="stat-number">
+                                {{ bookings.count|add:"0" }}
+                            </div>
+                            <div class="section-label">Matches</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Profile Form -->
+                <div class="fc-card p-4" id="edit-profile">
+                    <div class="section-label mb-3">
+                        <i class="fas fa-edit me-2"></i>Edit Profile
+                    </div>
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" name="username" class="form-control"
+                                   value="{{ user.username }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control"
+                                   value="{{ user.email }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Phone</label>
+                            <input type="tel" name="phone" class="form-control"
+                                   value="{{ user.phone|default:'' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Avatar</label>
+                            <input type="file" name="avatar" class="form-control"
+                                   accept="image/*">
+                        </div>
+                        <button type="submit" class="btn btn-highlight w-100">
+                            Save Changes
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right — Bookings -->
+            <div class="col-lg-8">
+                <div class="section-label mb-3">
+                    <i class="fas fa-ticket-alt me-2"></i>My Bookings
+                </div>
+
+                {% if bookings %}
+                <div class="d-flex flex-column gap-3">
+                    {% for booking in bookings %}
+                    <div class="booking-card">
+                        <div class="booking-card-header">
+                            <div>
+                                <div style="font-weight:700; font-size:0.95rem;">
+                                    {{ booking.match }}
+                                </div>
+                                <div style="font-size:0.78rem; color:var(--text-muted);">
+                                    {{ booking.match.date|date:"d M Y, H:i" }}
+                                </div>
+                            </div>
+                            <span style="
+                                background:rgba(46,204,113,0.15);
+                                color:var(--success);
+                                border:1px solid rgba(46,204,113,0.3);
+                                padding:4px 10px;
+                                border-radius:20px;
+                                font-size:0.72rem;
+                                font-weight:700;">
+                                {% if booking.payment_status == 'paid' %}✓ PAID
+                                {% else %}{{ booking.payment_status|upper }}{% endif %}
+                            </span>
+                        </div>
+                        <div style="padding:16px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                            <div class="d-flex gap-4">
+                                <div>
+                                    <div class="section-label">Tickets</div>
+                                    <div style="font-weight:700;">{{ booking.tickets.count }}</div>
+                                </div>
+                               <div>
+                                <div class="section-label">Section</div>
+                                <div style="font-weight:700; color:var(--accent-bright);">
+                                    {% with ticket=booking.tickets.first %}
+                                        {% if ticket %}
+                                            {{ ticket.seat.row.section.name }}
+                                            {% if booking.tickets.count > 1 %}
+                                                <span style="font-size:0.75rem; color:var(--text-muted);">+{{ booking.tickets.count|add:"-1" }} more</span>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endwith %}
+                                </div>
+                            </div>
+                                <div>
+                                    <div class="section-label">Total</div>
+                                    <div style="font-weight:700; font-family:'Bebas Neue',sans-serif; font-size:1.3rem; color:var(--accent-bright); line-height:1.2;">
+                                        €{{ booking.total_price }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="section-label">Ref</div>
+                                    <div style="font-weight:700;">#{{ booking.id }}</div>
+                                </div>
+                            </div>
+                            <a href="{% url 'booking_detail' booking.id %}"
+                               class="btn btn-primary-fc btn-sm">
+                                View Tickets →
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                <div style="text-align:center; padding:60px 20px; background:var(--card-bg); border:1px solid var(--card-border); border-radius:14px;">
+                    <div style="font-size:3rem; margin-bottom:16px;">🎟️</div>
+                    <h5 style="color:var(--text-muted); margin-bottom:8px;">No bookings yet</h5>
+                    <p style="color:var(--text-muted); font-size:0.875rem; margin-bottom:20px;">
+                        Start by browsing upcoming matches
+                    </p>
+                    <a href="{% url 'match_list' %}" class="btn btn-highlight">
+                        Browse Matches →
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</section>
+
+{% endblock %}

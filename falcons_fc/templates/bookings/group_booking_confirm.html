@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+{% block title %}Group Booking Confirmed — Falcons FC{% endblock %}
+
+{% block extra_css %}
+<style>
+.confirm-hero {
+    background: linear-gradient(135deg, rgba(46,204,113,0.1), rgba(27,58,107,0.3));
+    border-bottom: 1px solid rgba(46,204,113,0.2);
+    padding: 60px 0;
+    text-align: center;
+}
+
+.confirm-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(46,204,113,0.15);
+    border: 2px solid rgba(46,204,113,0.4);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin: 0 auto 24px;
+}
+
+.ticket-item {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.2s;
+}
+
+.ticket-item:hover {
+    border-color: var(--highlight);
+    transform: translateX(3px);
+}
+
+.ticket-item-header {
+    background: rgba(27,58,107,0.3);
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--card-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ticket-number {
+    width: 28px;
+    height: 28px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── CONFIRM HERO ────────────────────────────────── -->
+<div class="confirm-hero">
+    <div class="confirm-icon">🎉</div>
+    <h1 class="section-title mb-2">
+        GROUP BOOKING <span style="color:var(--success);">CONFIRMED!</span>
+    </h1>
+    <p style="color:var(--text-muted); font-size:0.95rem; max-width:500px; margin:0 auto 16px;">
+        All {{ tickets.count }} tickets have been secured.
+        Each holder will receive their own QR code and PDF ticket.
+    </p>
+    <div class="d-flex justify-content-center gap-4 flex-wrap">
+        <span style="font-size:0.8rem; color:var(--success);">
+            <i class="fas fa-check-circle me-1"></i>{{ tickets.count }} Tickets Confirmed
+        </span>
+        <span style="font-size:0.8rem; color:var(--highlight);">
+            <i class="fas fa-envelope me-1"></i>Confirmation Email Sent
+        </span>
+        <span style="font-size:0.8rem; color:var(--accent);">
+            <i class="fas fa-qrcode me-1"></i>QR Codes Generating
+        </span>
+    </div>
+</div>
+
+<!-- ── CONTENT ────────────────────────────────────── -->
+<section style="padding: 60px 0 80px;">
+    <div class="container">
+        <div class="row g-4 justify-content-center">
+            <div class="col-lg-8">
+
+                <!-- Booking Summary Card -->
+                <div class="fc-card p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
+                        <div>
+                            <div class="section-label mb-1">Booking Reference</div>
+                            <div style="font-family:'Bebas Neue',sans-serif; font-size:1.8rem; color:var(--highlight); line-height:1;">
+                                #{{ booking.id }}
+                            </div>
+                        </div>
+                        <span style="
+                            background:rgba(46,204,113,0.15);
+                            color:#2ECC71;
+                            border:1px solid rgba(46,204,113,0.3);
+                            padding:8px 20px;
+                            border-radius:20px;
+                            font-size:0.8rem;
+                            font-weight:700;
+                            letter-spacing:1px;">
+                            ✓ PAID
+                        </span>
+                    </div>
+
+                    <div style="background:rgba(27,58,107,0.3); border-radius:10px; padding:16px; margin-bottom:16px;">
+                        <div class="d-flex align-items-center gap-3">
+                            <div style="width:44px; height:44px; background:linear-gradient(135deg,var(--primary),var(--highlight)); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">🦅</div>
+                            <div>
+                                <div style="font-weight:700;">{{ booking.match }}</div>
+                                <div style="font-size:0.78rem; color:var(--text-muted);">
+                                    {{ booking.match.date|date:"l, d F Y — H:i" }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-4 flex-wrap">
+                        <div>
+                            <div class="section-label">Stadium</div>
+                            <div style="font-weight:600; font-size:0.875rem;">{{ booking.match.stadium.name }}</div>
+                        </div>
+                        <div>
+                            <div class="section-label">Tickets</div>
+                            <div style="font-weight:600; font-size:0.875rem;">{{ tickets.count }}</div>
+                        </div>
+                        <div>
+                            <div class="section-label">Total Paid</div>
+                            <div style="font-family:'Bebas Neue',sans-serif; font-size:1.5rem; color:var(--accent-bright); line-height:1.2;">
+                                €{{ booking.total_price }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Individual Tickets -->
+                <div class="section-label mb-3">
+                    <i class="fas fa-ticket-alt me-2"></i>Individual Tickets
+                </div>
+
+                <div class="d-flex flex-column gap-3 mb-4">
+                    {% for ticket in tickets %}
+                    <div class="ticket-item">
+                        <div class="ticket-item-header">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="ticket-number">{{ forloop.counter }}</div>
+                                <div>
+                                    <div style="font-weight:600; font-size:0.875rem;">
+                                        {{ ticket.holder_name|default:ticket.user.username }}
+                                    </div>
+                                    <div style="font-size:0.75rem; color:var(--text-muted);">
+                                        {{ ticket.seat.row.section.name }} —
+                                        Row {{ ticket.seat.row.row_number }},
+                                        Seat {{ ticket.seat.seat_number }}
+                                    </div>
+                                </div>
+                            </div>
+                            <span style="
+                                background:rgba(46,204,113,0.15);
+                                color:#2ECC71;
+                                border:1px solid rgba(46,204,113,0.3);
+                                padding:3px 10px;
+                                border-radius:20px;
+                                font-size:0.7rem;
+                                font-weight:700;">
+                                ✓ CONFIRMED
+                            </span>
+                        </div>
+
+                        <div style="padding:16px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                            <div class="d-flex gap-4">
+                                <div>
+                                    <div class="section-label">Section</div>
+                                    <div style="font-weight:700; color:var(--highlight);">
+                                        {{ ticket.seat.row.section.name }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="section-label">Row</div>
+                                    <div style="font-weight:700; font-family:'Bebas Neue',sans-serif; font-size:1.5rem; color:var(--accent-bright); line-height:1.2;">
+                                        {{ ticket.seat.row.row_number }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="section-label">Seat</div>
+                                    <div style="font-weight:700; font-family:'Bebas Neue',sans-serif; font-size:1.5rem; color:var(--accent-bright); line-height:1.2;">
+                                        {{ ticket.seat.seat_number }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="section-label">Price</div>
+                                    <div style="font-weight:700; font-family:'Bebas Neue',sans-serif; font-size:1.5rem; color:var(--accent-bright); line-height:1.2;">
+                                        €{{ ticket.final_price }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <a href="{% url 'ticket_detail' ticket.id %}"
+                               class="btn btn-highlight btn-sm px-4">
+                                <i class="fas fa-qrcode me-1"></i>View Ticket
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Actions -->
+                <div class="d-flex gap-3 flex-wrap">
+                    <a href="{% url 'profile' %}" class="btn btn-silver px-4">
+                        <i class="fas fa-user me-2"></i>My Bookings
+                    </a>
+                    <a href="{% url 'match_list' %}" class="btn btn-primary-fc px-4">
+                        Browse More Matches
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

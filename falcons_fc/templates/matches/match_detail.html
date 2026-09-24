@@ -1,0 +1,512 @@
+{% extends 'base.html' %}
+{% block title %}{{ match.home_team.name }} vs {{ match.away_team.name }} — Falcons FC{% endblock %}
+
+{% block extra_css %}
+<style>
+
+
+.recommended-card {
+    border-color: rgba(74,144,217,0.5) !important;
+    box-shadow: 0 0 20px rgba(74,144,217,0.1);
+}
+
+.recommended-card:hover {
+    border-color: var(--highlight) !important;
+    box-shadow: 0 16px 40px rgba(74,144,217,0.2) !important;
+}
+/* ── MATCH HERO ──────────────────────────────────── */
+.match-hero {
+    position: relative;
+    padding: 70px 0 50px;
+    overflow: hidden;
+    border-bottom: 1px solid var(--card-border);
+}
+
+.match-hero-bg {
+    position: absolute;
+    inset: 0;
+    background-image: url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=1600&q=80');
+    background-size: cover;
+    background-position: center;
+    filter: blur(3px) brightness(0.2);
+    transform: scale(1.05);
+}
+
+.match-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(13,27,46,0.7) 0%,
+        rgba(13,27,46,0.95) 100%
+    );
+}
+
+.match-hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.match-title-teams {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 32px;
+}
+
+.match-team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    max-width: 200px;
+}
+
+.match-crest {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+}
+
+.match-crest-home {
+    background: linear-gradient(135deg, var(--primary), var(--highlight));
+    box-shadow: 0 0 30px rgba(74,144,217,0.4);
+}
+
+.match-crest-away {
+    background: rgba(255,255,255,0.08);
+    border: 2px solid var(--card-border);
+}
+
+.match-team-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+    text-align: center;
+    color: var(--text-primary);
+}
+
+.match-vs-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.match-vs-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    color: var(--text-muted);
+    letter-spacing: 4px;
+}
+
+.match-meta-bar {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+}
+
+.match-meta-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.match-meta-label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 600;
+}
+
+.match-meta-value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* ── SECTION CARDS ───────────────────────────────── */
+.section-card-pro {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: all 0.25s;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.section-card-pro:hover {
+    border-color: var(--highlight);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+}
+
+.section-card-pro.vip {
+    border-color: rgba(192,192,192,0.25);
+}
+
+.section-card-pro.vip:hover {
+    border-color: var(--accent);
+    box-shadow: 0 16px 40px rgba(192,192,192,0.1);
+}
+
+.section-top-bar {
+    height: 4px;
+    width: 100%;
+}
+
+.vip .section-top-bar { background: linear-gradient(90deg, var(--accent), var(--accent-bright)); }
+.tribune .section-top-bar { background: linear-gradient(90deg, var(--highlight), var(--primary-light)); }
+.curve-nord .section-top-bar { background: linear-gradient(90deg, #2ECC71, #27AE60); }
+.curve-sud .section-top-bar { background: linear-gradient(90deg, #E74C3C, #C0392B); }
+
+.section-card-body {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.section-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+}
+
+.section-description {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+}
+
+.section-price-block {
+    margin-bottom: 16px;
+}
+
+.section-price {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    line-height: 1;
+    color: var(--accent-bright);
+}
+
+.section-price-base {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-decoration: line-through;
+}
+
+.section-price-label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+.availability-bar {
+    margin-bottom: 16px;
+}
+
+.availability-numbers {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.availability-count {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.availability-pct {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.progress {
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+}
+
+.section-card-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--card-border);
+    background: rgba(27,58,107,0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* ── SECTION ICONS ───────────────────────────────── */
+.section-icon {
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── MATCH HERO ─────────────────────────────────── -->
+<div class="match-hero">
+    <div class="match-hero-bg"></div>
+    <div class="match-hero-overlay"></div>
+    <div class="container match-hero-content">
+
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb" style="font-size:0.8rem;">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'match_list' %}" style="color:var(--highlight);">Fixtures</a>
+                </li>
+                <li class="breadcrumb-item active" style="color:var(--text-muted);">
+                    {{ match.home_team.name }} vs {{ match.away_team.name }}
+                </li>
+            </ol>
+        </nav>
+
+        <!-- Competition Badge -->
+        <div class="text-center mb-4">
+            {% if match.competition.competition_type == 'Derby' %}
+            <span class="badge-derby" style="font-size:0.8rem; padding:6px 16px;">
+                🔥 SICILY DERBY — {{ match.competition.name }}
+            </span>
+            {% elif match.competition.competition_type == 'Cup' %}
+            <span class="badge-cup" style="font-size:0.8rem; padding:6px 16px;">
+                🏆 {{ match.competition.name }}
+            </span>
+            {% else %}
+            <span class="badge-league" style="font-size:0.8rem; padding:6px 16px;">
+                ⚽ {{ match.competition.name }}
+            </span>
+            {% endif %}
+        </div>
+
+        <!-- Teams -->
+        <div class="match-title-teams">
+            <div class="match-team">
+                <div class="match-crest match-crest-home">
+                    {% if match.home_team.logo %}
+                    <img src="{{ match.home_team.logo.url }}" alt="{{ match.home_team.name }}" style="width:80%; height:80%; object-fit:contain;">
+                    {% else %}🦅{% endif %}
+                </div>
+                <div class="match-team-name">{{ match.home_team.name }}</div>
+            </div>
+
+            <div class="match-vs-block">
+                <div class="match-vs-text">VS</div>
+            </div>
+
+            <div class="match-team">
+                {% if match.away_team.logo %}
+                <img src="{{ match.away_team.logo.url }}" alt="{{ match.away_team.name }}" style="width:50%; height:50%; object-fit:contain;">
+                {% else %}
+                ⚽
+                {% endif %}
+                <div class="match-team-name">{{ match.away_team.name }}</div>
+            </div>
+        </div>
+
+        <!-- Match Meta -->
+        <div class="match-meta-bar">
+            <div class="match-meta-item">
+                <span class="match-meta-label">Date</span>
+                <span class="match-meta-value">{{ match.date|date:"l, d F Y" }}</span>
+            </div>
+            <div style="width:1px; background:var(--card-border);"></div>
+            <div class="match-meta-item">
+                <span class="match-meta-label">Kick-off</span>
+                <span class="match-meta-value">{{ match.date|date:"H:i" }}</span>
+            </div>
+            <div style="width:1px; background:var(--card-border);"></div>
+            <div class="match-meta-item">
+                <span class="match-meta-label">Stadium</span>
+                <span class="match-meta-value">{{ match.stadium.name }}</span>
+            </div>
+            <div style="width:1px; background:var(--card-border);"></div>
+            <div class="match-meta-item">
+                <span class="match-meta-label">City</span>
+                <span class="match-meta-value">{{ match.stadium.city }}</span>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ── SECTION CARDS ──────────────────────────────── -->
+<section style="padding: 60px 0 80px;">
+    <div class="container">
+                    {% if user.is_authenticated and recommended_section %}
+            <div class="alert-fc p-3 mb-4 d-flex align-items-center gap-3">
+                <div style="width:36px; height:36px; background:rgba(74,144,217,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <i class="fas fa-magic" style="color:var(--highlight);"></i>
+                </div>
+                <div>
+                    <div style="font-weight:600; font-size:0.875rem;">Personalised Recommendation</div>
+                    <div style="font-size:0.78rem; color:var(--text-muted);">
+                         We recommend the
+                        <strong style="color:var(--highlight);">{{ recommended_section.name }}</strong>
+                        section for this match.
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        <div class="d-flex justify-content-between align-items-end mb-5">
+            <div>
+                <div class="hero-eyebrow mb-2" style="font-size:0.7rem; letter-spacing:4px; text-transform:uppercase; color:var(--highlight); font-weight:600;">
+                    Select Your Experience
+                </div>
+                <h2 class="section-title">CHOOSE YOUR <span style="color:var(--highlight);">SECTION</span></h2>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size:0.78rem; color:var(--text-muted);">
+                    <i class="fas fa-bolt me-1" style="color:var(--highlight);"></i>
+                    Prices updated in real-time
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            {% for item in section_data %}
+<div class="col-md-6 col-lg-3">
+    <div class="section-card-pro
+        {% if item.section.name == 'VIP' %}vip
+        {% elif item.section.name == 'Tribune' %}tribune
+        {% elif item.section.name == 'Curve Nord' %}curve-nord
+        {% else %}curve-sud{% endif %}
+        {% if item.is_recommended %}recommended-card{% endif %}">
+
+        <div class="section-top-bar"></div>
+
+        <!-- Recommendation badge -->
+        {% if item.is_recommended %}
+        <div style="background:rgba(74,144,217,0.15); border-bottom:1px solid rgba(74,144,217,0.3); padding:8px 16px; display:flex; align-items:center; gap:8px;">
+            <i class="fas fa-magic" style="color:var(--highlight); font-size:0.75rem;"></i>
+            <span style="font-size:0.72rem; color:var(--highlight); font-weight:700; letter-spacing:1px; text-transform:uppercase;">Recommended for You</span>
+        </div>
+        {% endif %}
+
+        <div class="section-card-body">
+            <div class="section-icon">
+                {% if item.section.name == 'VIP' %}👑
+                {% elif item.section.name == 'Tribune' %}🎭
+                {% elif item.section.name == 'Curve Nord' %}🔵
+                {% else %}🔴{% endif %}
+            </div>
+
+            <div class="section-name">{{ item.section.name }}</div>
+            <div class="section-description">
+                {% if item.section.name == 'VIP' %}
+                    Premium hospitality — best view in the stadium
+                {% elif item.section.name == 'Tribune' %}
+                    Central stand — perfect sightlines
+                {% elif item.section.name == 'Curve Nord' %}
+                    North end — heart of the atmosphere
+                {% else %}
+                    South end — passionate fan zone
+                {% endif %}
+            </div>
+
+            <div class="section-price-block">
+                <div class="section-price-label">Dynamic Price</div>
+                <div class="section-price">€{{ item.dynamic_price }}</div>
+                {% if item.dynamic_price != item.section.base_price %}
+                <div class="section-price-base">Base: €{{ item.section.base_price }}</div>
+                {% endif %}
+            </div>
+
+            <div class="availability-bar">
+                <div class="availability-numbers">
+                    {% if item.sold_out %}
+                    <span class="badge-soldout">Sold Out</span>
+                    {% elif item.available < 10 %}
+                    <span class="badge-warning">⚡ Only {{ item.available }} left!</span>
+                    {% else %}
+                    <span class="badge-available">✓ {{ item.available }} available</span>
+                    {% endif %}
+                    <span class="availability-pct">{{ item.occupancy_pct }}% full</span>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar
+                        {% if item.occupancy_pct > 80 %}bg-danger
+                        {% elif item.occupancy_pct > 50 %}bg-warning
+                        {% else %}bg-success{% endif %}"
+                        style="width:{{ item.occupancy_pct }}%">
+                    </div>
+                </div>
+            </div>
+
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:auto;">
+                <i class="fas fa-users me-1"></i>{{ item.total }} total seats
+            </div>
+        </div>
+
+        <div class="section-card-footer">
+            {% if item.sold_out %}
+                {% if user.is_authenticated %}
+                <a href="{% url 'join_waitlist' match.id item.section.id %}"
+                   class="btn btn-sm w-100"
+                   style="border:1px solid var(--warning); color:var(--warning); background:transparent;">
+                    ⏳ Join Waitlist
+                </a>
+                {% else %}
+                <a href="{% url 'login' %}"
+                   class="btn btn-sm w-100"
+                   style="border:1px solid var(--card-border); color:var(--text-muted); background:transparent;">
+                    Login to Join Waitlist
+                </a>
+                {% endif %}
+            {% elif not user.is_authenticated %}
+                <a href="{% url 'login' %}" class="btn btn-silver w-100 btn-sm">
+                    Login to Book
+                </a>
+            {% else %}
+                <a href="{% url 'seat_map' match.id item.section.id %}"
+                   class="btn {% if item.is_recommended %}btn-highlight{% else %}btn-primary-fc{% endif %} w-100 btn-sm">
+                    {% if item.is_recommended %}
+                    ⭐ The Recommended →
+                    {% else %}
+                    Select Seat →
+                    {% endif %}
+                </a>
+                <a href="{% url 'group_seat' match.id item.section.id %}"
+                   class="btn btn-sm w-100"
+                   style="border:1px solid var(--card-border); color:var(--text-muted); background:transparent; font-size:0.78rem;">
+                    👥 Group Booking
+                </a>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+{% endfor %}
+</div>
+
+<!-- Back link -->
+<div class="mt-5">
+    <a href="{% url 'match_list' %}" class="btn btn-silver">
+        ← Back to All Fixtures
+    </a>
+</div>
+
+</div>
+</section>
+
+{% endblock %}

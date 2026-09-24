@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Falcons FC{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary:    #1B3A6B;
+            --primary-light: #2952A3;
+            --primary-dark:  #0D1B2E;
+            --accent:     #C0C0C0;
+            --accent-bright: #E8E8E8;
+            --highlight:  #4A90D9;
+            --dark-bg:    #0D1B2E;
+            --card-bg:    #111D2E;
+            --card-border:#1E3A5F;
+            --text-primary: #FFFFFF;
+            --text-muted:   #8BA3C1;
+            --success:    #2ECC71;
+            --danger:     #E74C3C;
+            --warning:    #F39C12;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* ── NAVBAR ─────────────────────────────── */
+        .navbar {
+            background: rgba(13, 27, 46, 0.97) !important;
+            border-bottom: 1px solid var(--card-border);
+            padding: 0 0;
+            height: 64px;
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--highlight));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 0 15px rgba(74,144,217,0.3);
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.1;
+        }
+
+        .brand-name {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.4rem;
+            color: var(--accent-bright);
+            letter-spacing: 2px;
+        }
+
+        .brand-sub {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .nav-link {
+            color: var(--text-muted) !important;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 0.5rem 1rem !important;
+            transition: color 0.2s;
+            position: relative;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--accent-bright) !important;
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 1rem;
+            right: 1rem;
+            height: 2px;
+            background: var(--highlight);
+            border-radius: 2px;
+        }
+
+        .navbar-nav .nav-item {
+            display: flex;
+            align-items: center;
+        }
+
+        /* ── BUTTONS ─────────────────────────────── */
+        .btn-primary-fc {
+            background: var(--primary);
+            color: #fff;
+            border: 1px solid var(--primary-light);
+            font-weight: 600;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            padding: 8px 20px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary-fc:hover {
+            background: var(--primary-light);
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(74,144,217,0.3);
+        }
+
+        .btn-silver {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            font-weight: 600;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            padding: 8px 20px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-silver:hover {
+            background: var(--accent);
+            color: var(--dark-bg);
+            transform: translateY(-1px);
+        }
+
+        .btn-highlight {
+            background: var(--highlight);
+            color: #fff;
+            border: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            padding: 10px 24px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-highlight:hover {
+            background: #3A80C9;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(74,144,217,0.4);
+        }
+
+        /* ── CARDS ───────────────────────────────── */
+        .fc-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .fc-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+        }
+
+        .fc-card-header {
+            background: rgba(27,58,107,0.4);
+            border-bottom: 1px solid var(--card-border);
+            padding: 12px 16px;
+        }
+
+        /* ── MATCH CARD ──────────────────────────── */
+        .match-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.25s ease;
+        }
+
+        .match-card:hover {
+            border-color: var(--highlight);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(74,144,217,0.15);
+        }
+
+        .match-card-header {
+            background: rgba(27,58,107,0.5);
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        /* ── BADGES ──────────────────────────────── */
+        .badge-derby {
+            background: rgba(231,76,60,0.15);
+            color: #E74C3C;
+            border: 1px solid rgba(231,76,60,0.3);
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .badge-cup {
+            background: rgba(243,156,18,0.15);
+            color: #F39C12;
+            border: 1px solid rgba(243,156,18,0.3);
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .badge-league {
+            background: rgba(74,144,217,0.15);
+            color: #4A90D9;
+            border: 1px solid rgba(74,144,217,0.3);
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .badge-available {
+            background: rgba(46,204,113,0.15);
+            color: #2ECC71;
+            border: 1px solid rgba(46,204,113,0.3);
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .badge-soldout {
+            background: rgba(231,76,60,0.15);
+            color: #E74C3C;
+            border: 1px solid rgba(231,76,60,0.3);
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .badge-warning {
+            background: rgba(243,156,18,0.15);
+            color: #F39C12;
+            border: 1px solid rgba(243,156,18,0.3);
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        /* ── SECTION CARDS ───────────────────────── */
+        .section-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.25s;
+            height: 100%;
+        }
+
+        .section-card:hover {
+            border-color: var(--highlight);
+            box-shadow: 0 8px 30px rgba(74,144,217,0.15);
+        }
+
+        .section-card.vip-card {
+            border-color: rgba(192,192,192,0.3);
+        }
+
+        .section-card.vip-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 8px 30px rgba(192,192,192,0.15);
+        }
+
+        /* ── FORMS ───────────────────────────────── */
+        .form-control {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            border-radius: 8px;
+            padding: 10px 14px;
+        }
+
+        .form-control:focus {
+            background: rgba(255,255,255,0.08);
+            border-color: var(--highlight);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 3px rgba(74,144,217,0.15);
+        }
+
+        .form-label {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .white-placeholder::placeholder {
+                color: white;
+                opacity: 0.5;
+                
+        }
+
+        /* ── TABLES ──────────────────────────────── */
+        .table {
+            color: var(--text-primary);
+        }
+
+        .table td {
+            border-color: var(--card-border);
+            padding: 10px 0;
+        }
+
+        /* ── ALERTS ──────────────────────────────── */
+        .alert-fc {
+            background: rgba(27,58,107,0.3);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            border-radius: 10px;
+            padding: 14px 18px;
+        }
+
+        /* ── PROGRESS BAR ────────────────────────── */
+        .progress {
+            background: rgba(255,255,255,0.08);
+            border-radius: 4px;
+            height: 5px;
+        }
+
+        /* ── PRICE TAG ───────────────────────────── */
+        .price-tag {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2rem;
+            color: var(--accent-bright);
+            letter-spacing: 1px;
+        }
+
+        .price-base {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-decoration: line-through;
+        }
+
+        /* ── SECTION LABELS ──────────────────────── */
+        .section-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+        }
+
+        /* ── SCROLLBAR ───────────────────────────── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--dark-bg); }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
+
+        /* ── FOOTER ──────────────────────────────── */
+        footer {
+            background: var(--primary-dark);
+            border-top: 1px solid var(--card-border);
+            padding: 40px 0 20px;
+            margin-top: 80px;
+        }
+
+        .footer-brand {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.8rem;
+            color: var(--accent-bright);
+            letter-spacing: 3px;
+        }
+
+        .footer-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+
+        .footer-link:hover { color: var(--accent-bright); }
+
+        /* ── DIVIDERS ────────────────────────────── */
+        .fc-divider {
+            border: none;
+            height: 1px;
+            background: var(--card-border);
+            margin: 24px 0;
+        }
+
+        /* ── UTILITIES ───────────────────────────── */
+        .text-muted { color: var(--text-muted) !important; }
+        .text-highlight { color: var(--highlight); }
+        .text-silver { color: var(--accent); }
+        .text-success { color: var(--success) !important; }
+        .text-danger { color: var(--danger) !important; }
+        .bg-card { background: var(--card-bg); }
+        .border-fc { border-color: var(--card-border) !important; }
+
+        /* ── FLASH MESSAGES ──────────────────────── */
+        .messages-container {
+            position: fixed;
+            top: 74px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 380px;
+        }
+
+        .alert {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            border-radius: 10px;
+            font-size: 0.875rem;
+        }
+
+        .alert-success { border-left: 3px solid var(--success); }
+        .alert-danger  { border-left: 3px solid var(--danger); }
+        .alert-warning { border-left: 3px solid var(--warning); }
+        .alert-info    { border-left: 3px solid var(--highlight); }
+
+        /* ── RESPONSIVE ──────────────────────────── */
+        @media (max-width: 768px) {
+            .price-tag { font-size: 1.5rem; }
+            .brand-name { font-size: 1.2rem; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ── NAVBAR ──────────────────────────────────────── -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'home' %}">
+            <div class="brand-logo">
+                <img src="{% static 'FALCONS.png' %}" alt="Falcons FC" style="width:28px; height:28px; object-fit:contain;">
+            </div>
+            <div class="brand-text">
+                <span class="brand-name">Falcons FC</span>
+                <span class="brand-sub">Official Ticketing</span>
+            </div>
+        </a>
+
+        <button class="navbar-toggler border-0" type="button"
+                data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto ms-4">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
+                       href="{% url 'home' %}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'match_list' %}active{% endif %}"
+                       href="{% url 'match_list' %}">Matches</a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav align-items-center gap-2">
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}"
+                           href="{% url 'profile' %}">
+                            <i class="fas fa-user-circle me-1"></i>{{ user.username }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-silver btn-sm" href="{% url 'logout' %}">
+                            Sign Out
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Sign In</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-highlight btn-sm" href="{% url 'register' %}">
+                            Get Tickets
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- ── FLASH MESSAGES ──────────────────────────────── -->
+{% if messages %}
+<div class="messages-container">
+    {% for message in messages %}
+    <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'warning' %}warning{% elif message.tags == 'success' %}success{% else %}info{% endif %} alert-dismissible fade show shadow-sm"
+         role="alert">
+        {% if message.tags == 'success' %}<i class="fas fa-check-circle me-2 text-success"></i>
+        {% elif message.tags == 'error' %}<i class="fas fa-exclamation-circle me-2 text-danger"></i>
+        {% elif message.tags == 'warning' %}<i class="fas fa-exclamation-triangle me-2 text-warning"></i>
+        {% else %}<i class="fas fa-info-circle me-2 text-highlight"></i>{% endif %}
+        {{ message }}
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- ── MAIN CONTENT ────────────────────────────────── -->
+<main>
+    {% block content %}{% endblock %}
+</main>
+
+<!-- ── FOOTER ──────────────────────────────────────── -->
+<footer>
+    <div class="container">
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="footer-brand mb-2 d-flex align-items-center gap-2">
+                    <img src="{% static 'FALCONS.png' %}" alt="Falcons FC" style="width:32px; height:32px; object-fit:contain;">
+                    Falcons FC
+                </div>
+                <p style="color:var(--text-muted); font-size:0.85rem; max-width:260px;">
+                    Official ticketing platform for Falcons FC.
+                    Book your seat, feel the game.
+                </p>
+            </div>
+            <div class="col-md-2">
+                <div class="section-label mb-3">Tickets</div>
+                <div class="d-flex flex-column gap-2">
+                    <a href="{% url 'match_list' %}" class="footer-link">Buy Tickets</a>
+                    <a href="{% url 'profile' %}" class="footer-link">My Bookings</a>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="section-label mb-3">Account</div>
+                <div class="d-flex flex-column gap-2">
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'profile' %}" class="footer-link">My Profile</a>
+                    <a href="{% url 'logout' %}" class="footer-link">Sign Out</a>
+                    {% else %}
+                    <a href="{% url 'login' %}" class="footer-link">Sign In</a>
+                    <a href="{% url 'register' %}" class="footer-link">Register</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="section-label mb-3">Stadium</div>
+                <p style="color:var(--text-muted); font-size:0.85rem;">
+                    🏟️ Falcons Arena, Messina<br>
+                    📍 Sicily, Italy<br>
+                    🪑 314 seats across 4 sections
+                </p>
+            </div>
+        </div>
+        <hr class="fc-divider">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <p style="color:var(--text-muted); font-size:0.8rem; margin:0;">
+                © 2026 Falcons FC. All rights reserved.
+            </p>
+            <div class="d-flex gap-3">
+                <span style="color:var(--text-muted); font-size:0.75rem;">
+                    <i class="fas fa-lock me-1"></i>Secure Payments
+                </span>
+                <span style="color:var(--text-muted); font-size:0.75rem;">
+                    <i class="fas fa-shield-alt me-1"></i>SSL Protected
+                </span>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

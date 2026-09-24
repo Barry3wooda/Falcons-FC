@@ -1,0 +1,15 @@
+.env
+venv/
+__pycache__/
+*.pyc
+*.pyo
+db.sqlite3
+media/
+staticfiles/
+.DS_Store
+*.egg-info/
+.vscode/
+.idea/
+falcons_fc/ml/data/database.sqlite
+falcons_fc/ml/data/*.sqlite
+falcons_fc/ml/data/*.csv

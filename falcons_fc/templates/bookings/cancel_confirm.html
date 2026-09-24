@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% block title %}Cancel Ticket — Falcons FC{% endblock %}
+
+{% block extra_css %}
+<style>
+.cancel-hero {
+    background: linear-gradient(135deg, rgba(231,76,60,0.1), rgba(13,27,46,0.95));
+    border-bottom: 1px solid rgba(231,76,60,0.2);
+    padding: 60px 0;
+    text-align: center;
+}
+
+.cancel-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(231,76,60,0.15);
+    border: 2px solid rgba(231,76,60,0.4);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin: 0 auto 24px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="cancel-hero">
+    <div class="cancel-icon">⚠️</div>
+    <h1 class="section-title mb-2">
+        CANCEL <span style="color:#E74C3C;">TICKET</span>
+    </h1>
+    <p style="color:var(--text-muted); font-size:0.95rem; max-width:480px; margin:0 auto;">
+        Are you sure you want to cancel this ticket?
+        This action cannot be undone.
+    </p>
+</div>
+
+<section style="padding: 60px 0 80px;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+
+                <!-- Ticket Info -->
+                <div class="fc-card p-4 mb-4">
+                    <div class="section-label mb-3">Ticket Being Cancelled</div>
+
+                    <div style="background:rgba(231,76,60,0.08); border:1px solid rgba(231,76,60,0.2); border-radius:10px; padding:20px; margin-bottom:16px;">
+                        <div style="font-weight:700; font-size:1rem; margin-bottom:12px;">
+                            {{ ticket.match }}
+                        </div>
+                        <div class="d-flex gap-4 flex-wrap">
+                            <div>
+                                <div class="section-label">Date</div>
+                                <div style="font-weight:600;">{{ ticket.match.date|date:"d M Y" }}</div>
+                            </div>
+                            <div>
+                                <div class="section-label">Section</div>
+                                <div style="font-weight:600; color:var(--highlight);">
+                                    {{ ticket.seat.row.section.name }}
+                                </div>
+                            </div>
+                            <div>
+                                <div class="section-label">Row / Seat</div>
+                                <div style="font-weight:600;">
+                                    R{{ ticket.seat.row.row_number }} / S{{ ticket.seat.seat_number }}
+                                </div>
+                            </div>
+                            <div>
+                                <div class="section-label">Price Paid</div>
+                                <div style="font-weight:700; font-family:'Bebas Neue',sans-serif; font-size:1.4rem; color:var(--accent-bright); line-height:1.2;">
+                                    €{{ ticket.final_price }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Warning -->
+                    <div class="alert-fc p-3 mb-4"
+                         style="border-left:3px solid #E74C3C;">
+                        <i class="fas fa-exclamation-triangle me-2" style="color:#E74C3C;"></i>
+                        <span style="font-size:0.85rem; color:var(--text-muted);">
+                            Cancelling this ticket will permanently release your seat.
+                            If anyone is on the waitlist they will be notified automatically.
+                            This action cannot be undone.
+                        </span>
+                    </div>
+
+                    <!-- Cancellation Form -->
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label class="form-label">
+                                Reason for cancellation
+                                <span style="color:var(--text-muted); font-weight:400;">(optional)</span>
+                            </label>
+                            <textarea name="reason"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="e.g. Change of plans, unable to attend..."></textarea>
+                        </div>
+
+                        <div class="d-flex gap-3">
+                            <a href="{% url 'ticket_detail' ticket.id %}"
+                               class="btn btn-silver flex-grow-1">
+                                ← Keep My Ticket
+                            </a>
+                            <button type="submit"
+                                    class="btn flex-grow-1"
+                                    style="background:rgba(231,76,60,0.2); border:1px solid rgba(231,76,60,0.5); color:#E74C3C; font-weight:600;"
+                                    onclick="this.innerHTML='Cancelling...'; this.disabled=true; this.form.submit();">
+                                ✕ Cancel Ticket
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

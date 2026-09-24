@@ -1,0 +1,476 @@
+{% extends 'base.html' %}
+{% block title %}Group Booking — {{ section.name }} — Falcons FC{% endblock %}
+
+{% block extra_css %}
+<style>
+.group-hero {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    border-bottom: 1px solid var(--card-border);
+    padding: 40px 0;
+}
+
+.result-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.result-card.perfect {
+    border-color: rgba(46,204,113,0.4);
+}
+
+.result-card.split {
+    border-color: rgba(74,144,217,0.4);
+}
+
+.result-card.impossible {
+    border-color: rgba(231,76,60,0.4);
+}
+
+.result-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--card-border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.result-header.perfect { background: rgba(46,204,113,0.08); }
+.result-header.split { background: rgba(74,144,217,0.08); }
+.result-header.impossible { background: rgba(231,76,60,0.08); }
+
+.seat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin: 3px;
+}
+
+.seat-pill.perfect-pill {
+    background: rgba(46,204,113,0.15);
+    color: #2ECC71;
+    border: 1px solid rgba(46,204,113,0.3);
+}
+
+.seat-pill.split-pill {
+    background: rgba(74,144,217,0.15);
+    color: var(--highlight);
+    border: 1px solid rgba(74,144,217,0.3);
+}
+
+.group-label {
+    display: inline-block;
+    background: rgba(27,58,107,0.5);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+/* Seat map styles */
+.pitch-indicator {
+    background: linear-gradient(180deg, rgba(46,204,113,0.15), transparent);
+    border: 1px solid rgba(46,204,113,0.2);
+    border-bottom: 3px solid rgba(46,204,113,0.4);
+    border-radius: 8px 8px 0 0;
+    padding: 10px;
+    text-align: center;
+    margin-bottom: 0;
+}
+
+.pitch-text {
+    font-size: 0.7rem;
+    color: rgba(46,204,113,0.7);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-weight: 600;
+}
+
+.seat-grid-wrapper {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    overflow: hidden;
+    padding: 24px;
+}
+
+.seat-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.row-label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+}
+
+.seat {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px 6px 3px 3px;
+    border: none;
+    cursor: default;
+    transition: all 0.15s;
+    position: relative;
+    font-size: 0;
+}
+
+.seat::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 3px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 0 0 3px 3px;
+}
+
+.seat.available {
+    background: rgba(46,204,113,0.2);
+    border: 1px solid rgba(46,204,113,0.4);
+}
+
+.seat.taken {
+    background: rgba(231,76,60,0.15);
+    border: 1px solid rgba(231,76,60,0.2);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.seat.selected {
+    background: var(--highlight);
+    border: 1px solid var(--highlight);
+    box-shadow: 0 0 12px rgba(74,144,217,0.5);
+}
+
+.legend-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.seat-tooltip {
+    position: absolute;
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary-dark);
+    border: 1px solid var(--card-border);
+    color: var(--text-primary);
+    font-size: 0.65rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 10;
+}
+
+.seat:hover .seat-tooltip {
+    opacity: 1;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── GROUP HERO ──────────────────────────────────── -->
+<div class="group-hero">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb" style="font-size:0.8rem;">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'match_list' %}" style="color:var(--highlight);">Fixtures</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'match_detail' match.id %}" style="color:var(--highlight);">
+                        {{ match.home_team.name }} vs {{ match.away_team.name }}
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" style="color:var(--text-muted);">Group Booking</li>
+            </ol>
+        </nav>
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div>
+                <h2 class="section-title mb-1">
+                    GROUP <span style="color:var(--highlight);">BOOKING</span>
+                </h2>
+                <p style="color:var(--text-muted); font-size:0.875rem; margin:0;">
+                    {{ section.name }} — {{ match.date|date:"d M Y, H:i" }}
+                </p>
+            </div>
+            <div style="background:rgba(255,255,255,0.05); border:1px solid var(--card-border); border-radius:10px; padding:12px 20px; text-align:center;">
+                <div style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">Price per Seat</div>
+                <div style="font-family:'Bebas Neue',sans-serif; font-size:2rem; color:var(--accent-bright); line-height:1;">
+                    €{{ dynamic_price }}
+                </div>
+                {% if dynamic_price != section.base_price %}
+                <div style="font-size:0.72rem; color:var(--text-muted); text-decoration:line-through;">€{{ section.base_price }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── CONTENT ────────────────────────────────────── -->
+<section style="padding: 40px 0 80px;">
+    <div class="container">
+        <div class="row g-4 justify-content-center">
+            <div class="col-lg-8">
+
+                <!-- Search Form -->
+                <div class="fc-card p-4 mb-4">
+                    <div class="section-label mb-2">
+                        <i class="fas fa-users me-2"></i>How many seats do you need?
+                    </div>
+                    <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:20px;">
+                        Our Smart Allocator finds the best available seats — guaranteed,
+                        even if no perfect block exists. We never reject a group request.
+                    </p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex gap-3 align-items-end flex-wrap">
+                            <div style="flex:1; min-width:160px;">
+                                <label class="form-label">Number of Seats</label>
+                                <input type="number" name="n_seats"
+                                       class="form-control form-control-lg"
+                                       min="2" max="30"
+                                       value="{{ n_seats|default:4 }}"
+                                       placeholder="e.g. 4">
+                            </div>
+                            <div>
+                                <button type="submit" class="btn btn-highlight btn-lg px-5"
+                                        id="find-btn">
+                                    <i class="fas fa-search me-2"></i>Find Best Seats
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Results -->
+                {% if result %}
+
+                {% if result.type == 'perfect' or result.type == 'split' %}
+            
+                <div class="result-card {{ result.type }}">
+                    <div class="result-header {{ result.type }}">
+                        <div style="width:36px; height:36px; background:{% if result.type == 'perfect' %}rgba(46,204,113,0.2){% else %}rgba(74,144,217,0.2){% endif %}; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0;">
+                            {% if result.type == 'perfect' %}✅{% else %}⚡{% endif %}
+                        </div>
+                        <div>
+                            <div style="font-weight:700; color:{% if result.type == 'perfect' %}#2ECC71{% else %}var(--highlight){% endif %};">
+                                {% if result.type == 'perfect' %}Perfect Block Found!{% else %}Smart Split Solution{% endif %}
+                            </div>
+                            <div style="font-size:0.78rem; color:var(--text-muted);">{{ result.message }}</div>
+                        </div>
+                    </div>
+            
+                    <div style="padding:20px;">
+            
+                        <!-- PITCH INDICATOR -->
+                        <div class="pitch-indicator mb-0" style="border-radius:8px 8px 0 0;">
+                            <span class="pitch-text">🏟️ Pitch / Playing Field 🏟️</span>
+                        </div>
+            
+                        <!-- FULL SEAT MAP -->
+                        <div class="seat-grid-wrapper" style="border-radius:0 0 14px 14px; border-top:none; margin-bottom:20px;">
+            
+                            {% for row in rows %}
+                            <div class="seat-row">
+                                <div class="row-label">R{{ row.row_number }}</div>
+                                {% for seat in row.seats.all %}
+                                <div style="position:relative;">
+                                    <div class="seat
+                                        {% if seat.id in taken_ids %}taken
+                                        {% elif seat.id in allocated_seat_ids %}selected
+                                        {% else %}available{% endif %}"
+                                        title="R{{ row.row_number }} S{{ seat.seat_number }}"
+                                        style="cursor:default;">
+                                    </div>
+                                    <div class="seat-tooltip">R{{ row.row_number }} S{{ seat.seat_number }}</div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endfor %}
+            
+                            <!-- LEGEND -->
+                            <div class="d-flex gap-4 mt-4 pt-4 flex-wrap" style="border-top:1px solid var(--card-border);">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="legend-dot" style="background:rgba(46,204,113,0.3); border:1px solid rgba(46,204,113,0.5);"></div>
+                                    <span style="font-size:0.78rem; color:var(--text-muted);">Available</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="legend-dot" style="background:var(--highlight); border:1px solid var(--highlight);"></div>
+                                    <span style="font-size:0.78rem; color:var(--text-muted);">Your Seats</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="legend-dot" style="background:rgba(231,76,60,0.2); border:1px solid rgba(231,76,60,0.2);"></div>
+                                    <span style="font-size:0.78rem; color:var(--text-muted);">Taken</span>
+                                </div>
+                            </div>
+                        </div>
+            
+                        <!-- GROUP SUMMARY BELOW MAP -->
+                        {% if result.type == 'split' %}
+                        <div class="alert-fc p-3 mb-3" style="font-size:0.8rem;">
+                            <i class="fas fa-info-circle me-2" style="color:var(--highlight);"></i>
+                            Your group will be split across {{ result.n_groups }} rows but
+                            all {{ result.total_seats }} seats are confirmed in one booking.
+                        </div>
+                        {% endif %}
+            
+                        <!-- GROUP DETAILS -->
+                        {% for group in result.groups %}
+                        <div class="mb-3">
+                            <div class="group-label">
+                                {% if result.type == 'split' %}Group {{ forloop.counter }} — {% endif %}
+                                Row {{ group.row_number }} — {{ group.size }} seats
+                                (Seats {{ group.start_seat }}–{{ group.end_seat }})
+                            </div>
+                        </div>
+                        {% endfor %}
+            
+                        <hr class="fc-divider">
+            
+                        <!-- CONFIRM BUTTON -->
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                            <div>
+                                <div class="section-label">Total for {{ result.total_seats }} seats</div>
+                                <div style="font-family:'Bebas Neue',sans-serif; font-size:2rem; color:var(--accent-bright); line-height:1;">
+                                    €{% widthratio dynamic_price 1 result.total_seats %}
+                                </div>
+                                <div style="font-size:0.8rem; color:var(--text-muted);">Final price at checkout</div>
+                            </div>
+                            <form method="post" action="{% url 'lock_group_seats' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="match_id" value="{{ match.id }}">
+                                <input type="hidden" name="section_id" value="{{ section.id }}">
+                                <input type="hidden" name="n_seats" value="{{ n_seats }}">
+                                <button type="submit" class="btn btn-highlight px-5">
+                                    Reserve {{ result.total_seats }} Seats →
+                                </button>
+                            </form>
+                        </div>
+            
+                    </div>
+                </div>
+            
+                {% elif result.type == 'impossible' %}
+                <div class="result-card impossible">
+                    <div class="result-header impossible">
+                        <div style="width:36px; height:36px; background:rgba(231,76,60,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0;">❌</div>
+                        <div>
+                            <div style="font-weight:700; color:#E74C3C;">Not Enough Seats</div>
+                            <div style="font-size:0.78rem; color:var(--text-muted);">{{ result.message }}</div>
+                        </div>
+                    </div>
+                    <div style="padding:20px;">
+                        <a href="{% url 'match_detail' match.id %}" class="btn btn-silver">
+                            ← Try Another Section
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% endif %}
+
+                <!-- Navigation -->
+                <div class="d-flex gap-3 mt-4 flex-wrap">
+                    <a href="{% url 'match_detail' match.id %}" class="btn btn-silver">
+                        ← Back to Match
+                    </a>
+                    <a href="{% url 'seat_map' match.id section.id %}" class="btn btn-primary-fc">
+                        Pick Seats Manually Instead
+                    </a>
+                </div>
+
+            </div>
+
+            <!-- Sidebar info -->
+            <div class="col-lg-4">
+                <div class="fc-card p-4" style="position:sticky; top:80px;">
+                    <div class="section-label mb-3">
+                        <i class="fas fa-info-circle me-2"></i>How It Works
+                    </div>
+
+                    <div class="d-flex flex-column gap-3">
+                        <div class="d-flex gap-3">
+                            <div style="width:32px; height:32px; background:rgba(74,144,217,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--highlight); font-size:0.8rem; flex-shrink:0; font-weight:700;">1</div>
+                            <div>
+                                <div style="font-weight:600; font-size:0.875rem;">Enter group size</div>
+                                <div style="font-size:0.78rem; color:var(--text-muted);">Min 2, max 10 seats per booking</div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-3">
+                            <div style="width:32px; height:32px; background:rgba(74,144,217,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--highlight); font-size:0.8rem; flex-shrink:0; font-weight:700;">2</div>
+                            <div>
+                                <div style="font-weight:600; font-size:0.875rem;">Smart allocation</div>
+                                <div style="font-size:0.78rem; color:var(--text-muted);">Algorithm finds best contiguous block</div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-3">
+                            <div style="width:32px; height:32px; background:rgba(74,144,217,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--highlight); font-size:0.8rem; flex-shrink:0; font-weight:700;">3</div>
+                            <div>
+                                <div style="font-weight:600; font-size:0.875rem;">Never rejected</div>
+                                <div style="font-size:0.78rem; color:var(--text-muted);">Split algorithm guarantees your seats</div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-3">
+                            <div style="width:32px; height:32px; background:rgba(74,144,217,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--highlight); font-size:0.8rem; flex-shrink:0; font-weight:700;">4</div>
+                            <div>
+                                <div style="font-weight:600; font-size:0.875rem;">One booking</div>
+                                <div style="font-size:0.78rem; color:var(--text-muted);">All seats confirmed in single transaction</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="fc-divider">
+
+                    <div>
+                        <div class="section-label mb-2">Match</div>
+                        <div style="font-weight:600; font-size:0.875rem;">{{ match }}</div>
+                        <div style="font-size:0.78rem; color:var(--text-muted);">{{ match.date|date:"d M Y, H:i" }}</div>
+                    </div>
+
+                    <div class="mt-3">
+                        <div class="section-label mb-2">Section</div>
+                        <div style="font-weight:600; color:var(--highlight);">{{ section.name }}</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelector('form').addEventListener('submit', function() {
+    var btn = document.getElementById('find-btn');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Searching...';
+});
+</script>
+{% endblock %}
