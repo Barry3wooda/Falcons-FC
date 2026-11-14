@@ -59,12 +59,5 @@ The seeder creates six user profiles to show how the recommendation engine behav
 
 ## Project Documentation
 
-The project follows Scrum: a 12-item product backlog, 7 sprints, user stories with acceptance criteria, and 17 UML diagrams. [Link to the report or diagrams, if you add them to the repo]
+The project follows Scrum: a 12-item product backlog, 7 sprints, user stories with acceptance criteria, and 17 UML diagrams.
 
-## Screenshots
-
-[Add screenshots of the match list, seat selection, and recommendations]
-
-## Author
-
-Abdalbarry · [GitHub](https://github.com/Barry3wooda)
